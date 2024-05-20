@@ -21,6 +21,7 @@ import {
   FormMessage
 } from "@/components/ui/form.jsx";
 import {useForm} from "react-hook-form";
+import {TimePicker} from "@/components/ui/time-picker.jsx";
 
 const formSchema = z.object({
   medicine: z.string().min(1, "Пожалуйста, выберите лекарство."),
@@ -114,7 +115,7 @@ const ReceiptForm = () => {
                           )}
                         >
                           {field.value ?
-                            format(field.value, "PPP", {locale: ru}) :
+                            format(field.value, "PPP HH:mm:ss", {locale: ru}) :
                             <span>Выберите дату начала приёма</span>
                           }
                           <CalendarIcon className="ml-auto h-4 w-4 opacity-50"/>
@@ -131,6 +132,12 @@ const ReceiptForm = () => {
                         }
                         initialFocus
                       />
+                      <div className="p-3 border-t border-border">
+                        <TimePicker
+                          setDate={field.onChange}
+                          date={field.value}
+                        />
+                      </div>
                     </PopoverContent>
                   </Popover>
                   <FormMessage/>
@@ -154,7 +161,7 @@ const ReceiptForm = () => {
                           )}
                         >
                           {field.value ?
-                            format(field.value, "PPP", {locale: ru}) :
+                            format(field.value, "PPP HH:mm:ss", {locale: ru}) :
                             <span>Выберите дату окончания приёма</span>
                           }
                           <CalendarIcon className="ml-auto h-4 w-4 opacity-50"/>
@@ -171,6 +178,12 @@ const ReceiptForm = () => {
                         }
                         initialFocus
                       />
+                      <div className="p-3 border-t border-border">
+                        <TimePicker
+                          setDate={field.onChange}
+                          date={field.value}
+                        />
+                      </div>
                     </PopoverContent>
                   </Popover>
                   <FormMessage/>
@@ -181,7 +194,7 @@ const ReceiptForm = () => {
         </Form>
       </CardContent>
       <CardFooter className="flex justify-end">
-        <Button onClick={form.handleSubmit(onSubmit)}>Создать</Button>
+      <Button onClick={form.handleSubmit(onSubmit)}>Создать</Button>
       </CardFooter>
     </Card>
   );
