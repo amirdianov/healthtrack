@@ -22,12 +22,14 @@ import {
 } from "@/components/ui/form.jsx";
 import {useForm} from "react-hook-form";
 import {TimePicker} from "@/components/ui/time-picker.jsx";
+import TimeInterval from "@/components/ui/time-interval.jsx";
 
 const formSchema = z.object({
   medicine: z.string().min(1, "Пожалуйста, выберите лекарство."),
   dosage: z.string().min(1, "Пожалуйста, введите дозировку."),
   start_date: z.date().min(new Date("1900-01-01"), "Пожалуйста, выберите дату начала приёма."),
   end_date: z.date().optional(),
+  periodicity: z.number().min(1, "Пожалуйста, задайте периодичность."),
 })
 
 const ReceiptForm = () => {
@@ -44,6 +46,7 @@ const ReceiptForm = () => {
       dosage: "",
       start_date: new Date(),
       end_date: undefined,
+      periodicity: 24 * 60 * 60,
     },
   })
 
@@ -186,6 +189,19 @@ const ReceiptForm = () => {
                       </div>
                     </PopoverContent>
                   </Popover>
+                  <FormMessage/>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="periodicity"
+              render={({field}) => (
+                <FormItem>
+                  <FormLabel>Периодичность</FormLabel>
+                  <FormControl>
+                    <TimeInterval onChange={field.onChange}/>
+                  </FormControl>
                   <FormMessage/>
                 </FormItem>
               )}
