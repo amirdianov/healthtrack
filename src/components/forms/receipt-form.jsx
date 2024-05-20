@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useEffect} from "react";
 import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from "@/components/ui/card.jsx";
 import {ru} from "date-fns/locale";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select.jsx";
@@ -7,7 +7,7 @@ import {Button} from "@/components/ui/button.jsx";
 import {Calendar} from "@/components/ui/calendar.jsx"
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover.jsx";
 import {cn} from "@/lib/utils.js";
-import {CalendarIcon} from "lucide-react";
+import {CalendarIcon, Plus} from "lucide-react";
 import {format} from "date-fns";
 import {z} from "zod";
 import {zodResolver} from "@hookform/resolvers/zod";
@@ -26,6 +26,8 @@ import TimeInterval from "@/components/ui/time-interval.jsx";
 import useReceiptStore from "@/stores/receipt-store.js";
 import {useToast} from "@/components/ui/use-toast.js";
 import {useNavigate} from "react-router-dom";
+import {ModalMedicine} from "@/components/forms/modal-medicine.jsx";
+import useMedicineStore from "@/stores/medicine-store.js";
 
 const formSchema = z.object({
   medicine: z.string().min(1, "Пожалуйста, выберите лекарство."),
@@ -40,10 +42,16 @@ const ReceiptForm = () => {
   const navigate = useNavigate();
 
   // TODO: get medicines from store
-  const medicines = [
-    {id: "fe2b7ab2-e25e-43e1-a7ba-f56549f2a577", title: "Аспирин"},
-    {id: "c74172b9-54b4-421d-9a5a-36a7cb8ee15f", title: "Стрепсилс"},
-  ];
+  // const medicines = [
+  //   {id: "fe2b7ab2-e25e-43e1-a7ba-f56549f2a577", title: "Аспирин"},
+  //   {id: "c74172b9-54b4-421d-9a5a-36a7cb8ee15f", title: "Стрепсилс"},
+  // ];
+    const medicines = useMedicineStore(state => state.medicines);
+    const fetchMedicines = useMedicineStore(state => state.fetchMedicines);
+
+    useEffect(() => {
+        fetchMedicines(); // Загружаем данные из локального хранилища при монтировании компонента
+    }, [fetchMedicines]);
   const addReceipt = useReceiptStore(state => state.addReceipt);
 
   const form = useForm({
@@ -80,19 +88,21 @@ const ReceiptForm = () => {
               render={({field}) => (
                 <FormItem>
                   <FormLabel>Лекарство</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Выберите лекарство"/>
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent position="popper">
-                      {medicines.map(medicine =>
-                        <SelectItem key={medicine.id} value={medicine.id}>{medicine.title}</SelectItem>
-                      )}
-                    </SelectContent>
-                  </Select>
-                  {/*TODO: add button with modal to add new medicine*/}
+                    <div className="flex items-center justify-between">
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Выберите лекарство"/>
+                                </SelectTrigger>
+                            </FormControl>
+                            <SelectContent position="popper">
+                                {medicines.map(medicine =>
+                                    <SelectItem key={medicine.id} value={medicine.id}>{medicine.title}</SelectItem>
+                                )}
+                            </SelectContent>
+                        </Select>
+                        <ModalMedicine/>
+                    </div>
                   <FormDescription>
                     Вы можете добавить новое лекарство, нажав на кнопку справа.
                   </FormDescription>
