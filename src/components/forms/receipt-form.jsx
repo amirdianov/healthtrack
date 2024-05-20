@@ -23,6 +23,9 @@ import {
 import {useForm} from "react-hook-form";
 import {TimePicker} from "@/components/ui/time-picker.jsx";
 import TimeInterval from "@/components/ui/time-interval.jsx";
+import useReceiptStore from "@/stores/receipt-store.js";
+import {useToast} from "@/components/ui/use-toast.js";
+import {useNavigate} from "react-router-dom";
 
 const formSchema = z.object({
   medicine: z.string().min(1, "Пожалуйста, выберите лекарство."),
@@ -33,11 +36,15 @@ const formSchema = z.object({
 })
 
 const ReceiptForm = () => {
+  const {toast} = useToast();
+  const navigate = useNavigate();
+
   // TODO: get medicines from store
   const medicines = [
     {id: "fe2b7ab2-e25e-43e1-a7ba-f56549f2a577", title: "Аспирин"},
     {id: "c74172b9-54b4-421d-9a5a-36a7cb8ee15f", title: "Стрепсилс"},
   ];
+  const addReceipt = useReceiptStore(state => state.addReceipt);
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -51,7 +58,11 @@ const ReceiptForm = () => {
   })
 
   function onSubmit(values) {
-    console.log(values);
+    addReceipt(values);
+    toast({
+      description: "Успешно создано назначение!",
+    });
+    navigate("/");
   }
 
   return (
@@ -81,8 +92,9 @@ const ReceiptForm = () => {
                       )}
                     </SelectContent>
                   </Select>
+                  {/*TODO: add button with modal to add new medicine*/}
                   <FormDescription>
-                    Вы можете добавить новое лекарство, нажав на кнопку справа
+                    Вы можете добавить новое лекарство, нажав на кнопку справа.
                   </FormDescription>
                   <FormMessage/>
                 </FormItem>
@@ -202,6 +214,9 @@ const ReceiptForm = () => {
                   <FormControl>
                     <TimeInterval onChange={field.onChange}/>
                   </FormControl>
+                  <FormDescription>
+                    С какой периодичностью нужно принимать лекарство.
+                  </FormDescription>
                   <FormMessage/>
                 </FormItem>
               )}
@@ -210,7 +225,7 @@ const ReceiptForm = () => {
         </Form>
       </CardContent>
       <CardFooter className="flex justify-end">
-      <Button onClick={form.handleSubmit(onSubmit)}>Создать</Button>
+        <Button onClick={form.handleSubmit(onSubmit)}>Создать</Button>
       </CardFooter>
     </Card>
   );

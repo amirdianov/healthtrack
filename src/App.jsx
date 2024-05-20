@@ -3,6 +3,7 @@ import Navbar from "@/components/navbar.jsx";
 import React, {useEffect} from "react";
 import useReceiptStore from "@/stores/receipt-store.js";
 import Router from "@/router.jsx";
+import {Toaster} from "@/components/ui/toaster.jsx";
 
 function App() {
   const {fetchReceipts, saveReceipts, receipts} = useReceiptStore(
@@ -22,6 +23,7 @@ function App() {
     <>
       <Navbar/>
       <Router/>
+      <Toaster />
     </>
   )
 }
