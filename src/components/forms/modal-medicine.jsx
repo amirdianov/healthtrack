@@ -1,70 +1,73 @@
-import { Button } from "@/components/ui/button"
-import {
-    Dialog,
-    DialogContent,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import {Button} from "@/components/ui/button"
+import {Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger} from "@/components/ui/dialog"
+import {Input} from "@/components/ui/input"
 import {Plus} from "lucide-react";
 import React, {useState} from "react";
-import {useNavigate} from "react-router-dom";
 import {useToast} from "@/components/ui/use-toast.js";
 import useMedicineStore from "@/stores/medicine-store.js";
 import {v4 as uuid} from "uuid";
+import {z} from "zod";
+import {useForm} from "react-hook-form";
+import {zodResolver} from "@hookform/resolvers/zod";
+import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form.jsx";
 
-export function ModalMedicine() {
-    const navigate = useNavigate()
-    const {toast} = useToast();
-    const addMedicine = useMedicineStore(state => state.addMedicine);
-    const [title, setTitle] = useState(""); // Состояние для хранения значения ввода
+const formSchema = z.object({
+  title: z.string().min(1, "Наименование лекарства не может быть пустым."),
+})
 
-    function onSubmit() {
-        if (title.trim() === "") {
-            toast({
-                description: "Наименование лекарства не может быть пустым",
-            });
-            return;
-        }
-        const newMedicine = {
-            id: uuid(),
-            title: title,
-        };
-        addMedicine(newMedicine);
-        toast({
-            description: "Успешно создано назначение!",
-        });
-        navigate("/");
-    }
-    return (
-        <Dialog>
-            <DialogTrigger asChild>
-                <Button className="ml-3" variant="outline" size="icon">
-                    <Plus className="h-4 w-4" />
-                </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                    <DialogTitle>Добавление лекарства</DialogTitle>
-                </DialogHeader>
-                <div className="flex items-center">
-                        <Label htmlFor="title">
-                            Наименование
-                        </Label>
-                        <Input
-                            id="title"
-                            className="ml-3"
-                            placeholder="Введите лекарство"
-                            onChange={(e) => setTitle(e.target.value)} // Обновляем состояние при изменении ввода
-                        />
-                </div>
-                <DialogFooter>
-                    <Button type="submit" onClick={onSubmit}>Добавить</Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
-    )
+export const ModalMedicine = () => {
+  const {toast} = useToast();
+
+  const [open, setOpen] = useState(false);
+  const addMedicine = useMedicineStore(state => state.addMedicine);
+
+  const form = useForm({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      title: "",
+    },
+  })
+
+  function onSubmit(medicineData) {
+    addMedicine({id: uuid(), ...medicineData});
+    toast({
+      description: "Лекарство успешно добавлено!",
+    });
+    setOpen(false);
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button className="ml-3" variant="outline" size="icon">
+          <Plus className="h-4 w-4"/>
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Добавление лекарства</DialogTitle>
+        </DialogHeader>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="title"
+              render={({field}) => (
+                <FormItem>
+                  <FormLabel>Наименование</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Введите лекарство" {...field} />
+                  </FormControl>
+                  <FormMessage/>
+                </FormItem>
+              )}
+            />
+          </form>
+        </Form>
+        <DialogFooter>
+          <Button type="submit" onClick={form.handleSubmit(onSubmit)}>Добавить</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
 }

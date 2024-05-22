@@ -7,37 +7,36 @@ import {Toaster} from "@/components/ui/toaster.jsx";
 import useMedicineStore from "@/stores/medicine-store.js";
 
 function App() {
-    const {fetchReceipts, saveReceipts, receipts} = useReceiptStore(
-        ({addReceipt, fetchReceipts, saveReceipts, receipts}) => ({addReceipt, fetchReceipts, saveReceipts, receipts})
-    );
-    const {fetchMedicines, saveMedicines, medicines} = useMedicineStore(
-        ({addMedicine, fetchMedicines, saveMedicines, medicines}) => ({addMedicine, fetchMedicines, saveMedicines, medicines})
-    );
+  const {fetchReceipts, saveReceipts, receipts} = useReceiptStore(
+    ({fetchReceipts, saveReceipts, receipts}) => ({fetchReceipts, saveReceipts, receipts})
+  );
+  const {fetchMedicines, saveMedicines, medicines} = useMedicineStore(
+    ({fetchMedicines, saveMedicines, medicines}) => ({fetchMedicines, saveMedicines, medicines})
+  );
 
-    useEffect(() => {
-        fetchReceipts();
-    }, []);
+  useEffect(() => {
+    fetchReceipts();
+  }, []);
 
-    useEffect(() => {
-        saveReceipts();
-    }, [receipts]);
+  useEffect(() => {
+    saveReceipts();
+  }, [receipts]);
 
-    useEffect(() => {
-        fetchMedicines();
-    }, []);
+  useEffect(() => {
+    fetchMedicines();
+  }, []);
 
-    useEffect(() => {
-        saveMedicines();
-    }, [medicines]);
+  useEffect(() => {
+    saveMedicines();
+  }, [medicines]);
 
-
-    return (
-        <>
-            <Navbar/>
-            <Router/>
-            <Toaster/>
-        </>
-    )
+  return (
+    <>
+      <Navbar/>
+      <Router/>
+      <Toaster/>
+    </>
+  )
 }
 
 export default App
