@@ -86,7 +86,7 @@ const ReceiptForm = () => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent position="popper">
-                        {medicines.map(medicine =>
+                        {Object.values(medicines).map(medicine =>
                           <SelectItem key={medicine.id} value={medicine.id}>{medicine.title}</SelectItem>
                         )}
                       </SelectContent>
