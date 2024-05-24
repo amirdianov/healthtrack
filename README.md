@@ -1,8 +1,24 @@
-# React + Vite
+# HealthTrack
+Сервис для учета и мониторинга здоровья
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Описание проекта
+Приложение, которое позволит пользователям отслеживать 
+свои медицинские показатели, записи о приеме лекарств, 
+результаты физических нагрузок, питание, результаты медицинских анализов.
 
-Currently, two official plugins are available:
+## Реализованный функционал
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- [x] Добавление лекарств
+- [x] Добавление назначений от врача
+- [x] Отображение напоминаний о приёме лекарств на календаре
+
+## Локальный запуск
+
+1. Установка зависимостей
+    ```
+    yarn install
+    ```
+2. Запуск сервера
+    ```
+    yarn dev
+    ```
