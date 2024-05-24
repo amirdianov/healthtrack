@@ -7,7 +7,13 @@ const useReceiptStore = createWithEqualityFn()(devtools(
     receipts: [],
 
     addReceipt: (receipt) => set(state => ({receipts: [...state.receipts, receipt]})),
-    fetchReceipts: () => set({receipts: JSON.parse(localStorage.getItem("receipts")) || []}),
+    fetchReceipts: () => set({
+      receipts: JSON.parse(localStorage.getItem("receipts"))?.map((receipt) => ({
+        ...receipt,
+        start_date: new Date(receipt.start_date),
+        end_date: receipt.end_date ? new Date(receipt.end_date) : null,
+      })) || []
+    }),
     saveReceipts: () => localStorage.setItem("receipts", JSON.stringify(get().receipts)),
   }),
   shallow

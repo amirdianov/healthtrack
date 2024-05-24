@@ -1,9 +1,11 @@
 import React, {useEffect, useRef, useState} from "react";
+import "./calendar.css";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid"
 import useReceiptStore from "@/stores/receipt-store.js";
 import useMedicineStore from "@/stores/medicine-store.js";
-import {addMilliseconds, addMonths} from "date-fns";
+import {addMilliseconds, addWeeks} from "date-fns";
+import ruLocale from "@fullcalendar/core/locales/ru";
 
 
 const Calendar = () => {
@@ -15,17 +17,17 @@ const Calendar = () => {
   const receipts = useReceiptStore(store => store.receipts);
   const medicines = useMedicineStore(store => store.medicines);
 
-  const fillEventsByReceipt = (title, periodicity, start, end) => {
+  const fillEventsByReceipt = (receipt) => {
     const newEvents = [];
-    let currentDate = start;
+    let currentDate = receipt.start_date;
 
-    while (currentDate <= end) {
+    while (currentDate <= receipt.end_date) {
       newEvents.push({
-        title,
+        title: `${medicines[receipt.medicine].title} (${receipt.dosage})`,
         start: currentDate,
         end: currentDate,
       });
-      currentDate = addMilliseconds(currentDate, periodicity);
+      currentDate = addMilliseconds(currentDate, receipt.periodicity);
     }
 
     setEvents((prevState) => [...prevState, ...newEvents]);
@@ -35,14 +37,9 @@ const Calendar = () => {
     const newInfiniteReceipts = [];
 
     infiniteReceipts.forEach((infiniteReceipt) => {
-      const endDate = addMonths(infiniteReceipt.start_date, 2);
+      const endDate = addWeeks(infiniteReceipt.start_date, 6);
 
-      fillEventsByReceipt(
-        medicines[infiniteReceipt.medicine].title,
-        infiniteReceipt.periodicity,
-        infiniteReceipt.start_date,
-        endDate
-      );
+      fillEventsByReceipt({...infiniteReceipt, end_date: endDate});
       newInfiniteReceipts.push({
         ...infiniteReceipt,
         start_date: addMilliseconds(endDate, infiniteReceipt.periodicity)
@@ -62,25 +59,17 @@ const Calendar = () => {
 
   const getInitialEvents = (receipts) => {
     receipts.forEach((receipt) => {
-      const startDate = new Date(receipt.start_date);
-      let endDate;
+      let endDate = receipt.end_date;
 
-      if (receipt.end_date) {
-        endDate = new Date(receipt.end_date);
-      } else {
-        endDate = addMonths(startDate, 2);
+      if (!endDate) {
+        endDate = addWeeks(receipt.start_date, 12);
         setInfiniteReceipts((prevState) => [
           ...prevState,
           {...receipt, "start_date": addMilliseconds(endDate, receipt.periodicity)}
         ]);
       }
 
-      fillEventsByReceipt(
-        medicines[receipt.medicine].title,
-        receipt.periodicity,
-        startDate,
-        endDate
-      );
+      fillEventsByReceipt({...receipt, end_date: endDate});
     });
   }
 
@@ -92,20 +81,19 @@ const Calendar = () => {
   }, [receipts]);
 
   return (
-    <div>
-      <FullCalendar
-        ref={calendarRef}
-        plugins={[dayGridPlugin]}
-        initialView="dayGridMonth"
-        events={events}
-        eventTimeFormat={{
-          hour: "2-digit",
-          minute: "2-digit",
-          meridiem: false,
-          hour12: false,
-        }}
-      />
-    </div>
+    <FullCalendar
+      ref={calendarRef}
+      plugins={[dayGridPlugin]}
+      initialView="dayGridMonth"
+      events={events}
+      eventTimeFormat={{
+        hour: "2-digit",
+        minute: "2-digit",
+        meridiem: false,
+        hour12: false,
+      }}
+      locale={ruLocale}
+    />
   );
 };
 
