@@ -1,79 +1,101 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from "react";
 import FullCalendar from "@fullcalendar/react";
-import dayGridPlugin from '@fullcalendar/daygrid'
+import dayGridPlugin from "@fullcalendar/daygrid"
 import useReceiptStore from "@/stores/receipt-store.js";
 import useMedicineStore from "@/stores/medicine-store.js";
 import {addMilliseconds, addMonths} from "date-fns";
 
 
 const Calendar = () => {
+  const calendarRef = useRef(null);
+
   const [events, setEvents] = useState([]);
   const [infiniteReceipts, setInfiniteReceipts] = useState([]);
 
   const receipts = useReceiptStore(store => store.receipts);
   const medicines = useMedicineStore(store => store.medicines);
 
-  const fillCalendar = (title, periodicity, start, end) => {
-    const events = []
+  const fillEventsByReceipt = (title, periodicity, start, end) => {
+    const newEvents = [];
     let currentDate = start;
 
-    while(currentDate <= end) {
-      events.push({
+    while (currentDate <= end) {
+      newEvents.push({
         title,
         start: currentDate,
-        end: currentDate
-      })
-
+        end: currentDate,
+      });
       currentDate = addMilliseconds(currentDate, periodicity);
     }
-    return events;
-  }
+
+    setEvents((prevState) => [...prevState, ...newEvents]);
+  };
 
   const onClickNext = () => {
-    const events = [];
+    const newInfiniteReceipts = [];
 
     infiniteReceipts.forEach((infiniteReceipt) => {
-      const endDate = addMonths(new Date(infiniteReceipt.start_date), 2);
-      events.push(...fillCalendar(medicines[infiniteReceipt.medicine].title, infiniteReceipt.periodicity,
-        new Date(infiniteReceipt.start_date), endDate));
+      const endDate = addMonths(infiniteReceipt.start_date, 2);
+
+      fillEventsByReceipt(
+        medicines[infiniteReceipt.medicine].title,
+        infiniteReceipt.periodicity,
+        infiniteReceipt.start_date,
+        endDate
+      );
+      newInfiniteReceipts.push({
+        ...infiniteReceipt,
+        start_date: addMilliseconds(endDate, infiniteReceipt.periodicity)
+      });
     })
-    setEvents((prevState) => [...prevState, events]);
+    setInfiniteReceipts(() => newInfiniteReceipts);
   };
 
   useEffect(() => {
-    const [nextButton] = document.getElementsByClassName('fc-next-button');
-
-    nextButton.addEventListener('click', onClickNext);
+    const [nextButton] = document.getElementsByClassName("fc-next-button");
+    nextButton.addEventListener("click", onClickNext);
 
     return () => {
-      nextButton.removeEventListener('click', onClickNext);
+      nextButton.removeEventListener("click", onClickNext);
     };
-  }, []);
+  }, [infiniteReceipts]);
 
-  const getEvents = (receipts) => {
-    const events = receipts.map((receipt) => {
+  const getInitialEvents = (receipts) => {
+    receipts.forEach((receipt) => {
+      const startDate = new Date(receipt.start_date);
+      let endDate;
+
       if (receipt.end_date) {
-        return fillCalendar(medicines[receipt.medicine].title,
-          receipt.periodicity, new Date(receipt.start_date), new Date(receipt.end_date));
+        endDate = new Date(receipt.end_date);
+      } else {
+        endDate = addMonths(startDate, 2);
+        setInfiniteReceipts((prevState) => [
+          ...prevState,
+          {...receipt, "start_date": addMilliseconds(endDate, receipt.periodicity)}
+        ]);
       }
-      const endDate = addMonths(new Date(receipt.start_date), 2);
-        const res = fillCalendar(medicines[receipt.medicine].title, receipt.periodicity,
-          new Date(receipt.start_date), endDate);
-        setInfiniteReceipts((prevState) => [...prevState, {...receipt, "start_date": endDate}]);
-        return res;
 
-    })
-    return events.flat();
+      fillEventsByReceipt(
+        medicines[receipt.medicine].title,
+        receipt.periodicity,
+        startDate,
+        endDate
+      );
+    });
   }
 
   useEffect(() => {
-    setEvents(getEvents(receipts))
+    setEvents([]);
+    setInfiniteReceipts([]);
+    calendarRef.current.getApi().today();
+    getInitialEvents(receipts);
   }, [receipts]);
 
   return (
     <div>
       <FullCalendar
-        plugins={[ dayGridPlugin ]}
+        ref={calendarRef}
+        plugins={[dayGridPlugin]}
         initialView="dayGridMonth"
         events={events}
         eventTimeFormat={{

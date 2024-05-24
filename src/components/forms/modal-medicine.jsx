@@ -34,6 +34,7 @@ export const ModalMedicine = () => {
       description: "Лекарство успешно добавлено!",
     });
     setOpen(false);
+    form.reset();
   }
 
   return (
